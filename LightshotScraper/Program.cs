@@ -5,10 +5,13 @@ using System.Xml;
 
 namespace LightshotScraper
 {
-    class Program
+    static class Program
     {
+        static WebClient webClient = new WebClient();
         static void Main(string[] args)
         {
+            webClient.Headers.Add("User-Agent: Other");
+
             Console.WriteLine("Hello, World!");
 
             for (int i = 1; i < 1000; i++)
@@ -25,14 +28,17 @@ namespace LightshotScraper
                 int idxStart = html.IndexOf(key) + key.Length;
                 int idxEnd = html.IndexOf(".png", idxStart);
                 string imageUrl = html.Substring(idxStart, idxEnd - idxStart + 4);
-                Console.WriteLine(imageUrl);
 
-                WebClient webClient = new WebClient();
-                webClient.Headers.Add("User-Agent: Other");
-                webClient.DownloadFile(imageUrl, @"C:\Users\johnd\Desktop\image.png");
+                // if not the length of a typical imgur link
+                if (imageUrl.Length != 31)
+                {
+                    Console.WriteLine("Failed to retrieve image.");
+                    continue;
+                }
 
-                Console.WriteLine("Downloaded. Press any key to continue.");
-                Console.ReadKey();
+                Console.Write(imageUrl);
+                webClient.DownloadFile(imageUrl, $@"C:\Users\johnd\Desktop\LightShotScraping\{id}.png");
+                Console.WriteLine(", Finished downloading.");
             }
 
             Console.ReadKey();
