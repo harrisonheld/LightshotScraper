@@ -12,9 +12,7 @@ namespace LightshotScraper
         {
             webClient.Headers.Add("User-Agent: Other");
 
-            Console.WriteLine("Hello, World!");
-
-            for (int i = 1; i < 1000; i++)
+            for (int i = 4000; i < 5000; i++)
             {
                 string id = IndexToID(i);
                 string url = "https://prnt.sc/" + id;
@@ -24,12 +22,13 @@ namespace LightshotScraper
 
                 // extract a tag such as the following
                 // <img class="no-click screenshot-image" src="https://i.imgur.com/LbpzD7m.png" ... 
-                string key = "img class=\"no-click screenshot-image\" src=\"";
-                int idxStart = html.IndexOf(key) + key.Length;
+                // could probably use html parsing or regex or something but lets be honest who cares
+                string KEY = "img class=\"no-click screenshot-image\" src=\"";
+                int idxStart = html.IndexOf(KEY) + KEY.Length;
                 int idxEnd = html.IndexOf(".png", idxStart);
                 string imageUrl = html.Substring(idxStart, idxEnd - idxStart + 4);
 
-                // if not the length of a typical imgur link
+                // if not the length of a typical imgur link, discard it
                 if (imageUrl.Length != 31)
                 {
                     Console.WriteLine("Failed to retrieve image.");
@@ -37,20 +36,21 @@ namespace LightshotScraper
                 }
 
                 Console.Write(imageUrl);
+                // download the pic
                 webClient.DownloadFile(imageUrl, $@"C:\Users\johnd\Desktop\LightShotScraping\{id}.png");
                 Console.WriteLine(", Finished downloading.");
             }
 
             Console.ReadKey();
         }
-
-        // Not correct, but correct enough.
         private static string IndexToID(int idx)
         {
             // 0th ID should aaaaaa
             // 1st ID should be aaaaab
             // 25th ID should aaaaaz
             // 26th should be aaaaba
+
+            // basically just convert to base 26 using a-z as digits
             string result = "";
             int RADIX = 26;
 
@@ -60,7 +60,8 @@ namespace LightshotScraper
                 idx /= RADIX;
 
                 char c = (char)('a' + charCode);
-                result += c;
+                // put the character in the front
+                result = result.Insert(0, c.ToString());
             }
 
             result = result.PadLeft(6, 'a');
